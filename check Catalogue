@@ -1,0 +1,75 @@
+const rows = $input.all();
+const ai = $("PARSE").first().json;
+
+const product = String(ai.product || "").trim().toLowerCase();
+
+let match = null;
+
+for (const item of rows) {
+  const catalogueProduct = String(
+    item.json.Product || ""
+  ).trim().toLowerCase();
+
+  if (catalogueProduct === product) {
+    match = item.json;
+    break;
+  }
+}
+
+if (!match) {
+  return [
+    {
+      json: {
+        ...ai,
+        catalogue_match: false,
+        price: null,
+        availability: null,
+        catalogue_sizes: null,
+        catalogue_colours: null,
+        human_review: true,
+        customer_response:
+          "A sales representative needs to confirm this product before we can respond."
+      }
+    }
+  ];
+}
+
+const price = match.Price || null;
+const availability = match.Availability || null;
+const sizes = match.Sizes || null;
+const colours = match.Colours || null;
+
+let response = "Yes, " + match.Product + " is " + availability + ".";
+
+if (price) {
+  response += " The price is ₦" + Number(price).toLocaleString() + " each.";
+}
+
+if (ai.size) {
+  response += " You requested size " + ai.size + ".";
+}
+
+if (ai.colour) {
+  response += " You requested " + ai.colour + ".";
+}
+
+if (ai.quantity > 1 && price) {
+  const total = Number(price) * Number(ai.quantity);
+  response += " The total for " + ai.quantity + " pieces is ₦" +
+    total.toLocaleString() + ".";
+}
+
+return [
+  {
+    json: {
+      ...ai,
+      catalogue_match: true,
+      price: price,
+      availability: availability,
+      catalogue_sizes: sizes,
+      catalogue_colours: colours,
+      human_review: ai.human_review || false,
+      customer_response: response
+    }
+  }
+];
