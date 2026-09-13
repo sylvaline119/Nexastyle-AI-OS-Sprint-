@@ -1,0 +1,40 @@
+const text = $json.output || "";
+
+let clean = text.trim();
+
+clean = clean.replace(/^```json\s*/i, "");
+clean = clean.replace(/^```\s*/i, "");
+clean = clean.replace(/\s*```$/i, "");
+
+let data;
+
+try {
+  data = JSON.parse(clean);
+} catch (error) {
+  return {
+    json: {
+      product: null,
+      size: null,
+      colour: null,
+      quantity: 1,
+      intent: "Information Only",
+      lead_priority: "Low",
+      human_review: true,
+      parse_error: true,
+      raw_ai_output: text
+    }
+  };
+}
+
+return {
+  json: {
+    product: data.product || null,
+    size: data.size || null,
+    colour: data.colour || null,
+    quantity: Number(data.quantity) || 1,
+    intent: data.intent || "Information Only",
+    lead_priority: data.lead_priority || "Low",
+    human_review: Boolean(data.human_review),
+    raw_ai_output: text
+  }
+};
